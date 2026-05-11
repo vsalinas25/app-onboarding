@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Programa SEÑAL · AMG Apps & Performance</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --coral:#EB4751;--orange:#F98C53;--lav:#A3A7C6;--navy:#26283F;
+  --cream:#FAF9F7;--white:#FFFFFF;--g100:#F3F2EF;--g200:#E4E2DC;
+  --g400:#B0AEAD;--g500:#7A7A8A;--r:10px;
+  --victor:#26283F;--mkt:#6366a0;--coord:#EB4751;
+}
+body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--navy);font-size:14px;line-height:1.6}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(20,20,35,.85);z-index:1000;display:flex;align-items:center;justify-content:center}
+.modal-overlay.hidden{display:none}
+.modal-box{background:var(--white);border-radius:16px;padding:40px;max-width:480px;width:90%;text-align:center}
+.modal-logo{font-family:'Playfair Display',serif;font-weight:800;font-size:2rem;color:var(--coral);margin-bottom:4px}
+.modal-logo span{color:var(--orange)}
+.modal-subtitle{font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--lav);margin-bottom:28px}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--navy);margin-bottom:8px}
+.modal-desc{font-size:.82rem;color:var(--g500);margin-bottom:28px;line-height:1.6}
+.role-buttons{display:flex;flex-direction:column;gap:12px}
+.role-btn{padding:14px 20px;border:2px solid var(--g200);border-radius:10px;cursor:pointer;text-align:left;background:var(--white);transition:all .2s}
+.role-btn:hover{border-color:var(--coral);background:rgba(235,71,81,.04)}
+.role-btn.selected{border-color:var(--coral);background:rgba(235,71,81,.06)}
+.role-btn-name{font-weight:700;font-size:.9rem;color:var(--navy)}
+.role-btn-desc{font-size:.75rem;color:var(--g500);margin-top:2px}
+.modal-confirm{margin-top:20px;background:var(--coral);color:var(--white);border:none;border-radius:8px;padding:12px 28px;font-size:.88rem;font-weight:700;cursor:pointer;width:100%}
+.modal-confirm:disabled{opacity:.4;cursor:not-allowed}
+
+/* Report modal */
+.report-modal{position:fixed;inset:0;background:rgba(20,20,35,.85);z-index:900;display:flex;align-items:center;justify-content:center}
+.report-modal.hidden{display:none}
+.report-box{background:var(--white);border-radius:14px;padding:32px;max-width:520px;width:90%}
+.report-box h3{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:6px}
+.report-box p{font-size:.82rem;color:var(--g500);margin-bottom:18px}
+.report-box textarea{width:100%;border:1.5px solid var(--g200);border-radius:8px;padding:12px;font-size:.83rem;font-family:'Inter',sans-serif;resize:vertical;min-height:90px;color:var(--navy)}
+.report-box textarea:focus{outline:none;border-color:var(--coral)}
+.report-actions{display:flex;gap:10px;margin-top:14px}
+.btn-confirm-report{flex:1;background:var(--coral);color:var(--white);border:none;border-radius:8px;padding:10px;font-size:.85rem;font-weight:700;cursor:pointer}
+.btn-cancel-report{flex:0 0 80px;background:var(--g100);color:var(--g500);border:none;border-radius:8px;padding:10px;font-size:.85rem;cursor:pointer}
+
+/* ── HEADER ── */
+.header{background:linear-gradient(135deg,var(--navy) 0%,#1a1c2e 55%,#2a1e38 100%);position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-100px;right:-60px;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(249,140,83,.16) 0%,transparent 70%)}
+.hdr-inner{max-width:940px;margin:0 auto;padding:40px 32px 36px;position:relative;z-index:1}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;flex-wrap:wrap;gap:14px}
+.logo{display:flex;align-items:baseline;gap:5px}
+.logo-amg{font-family:'Playfair Display',serif;font-weight:800;font-size:1.9rem;color:var(--coral)}
+.logo-dot{font-family:'Playfair Display',serif;font-weight:800;font-size:1.9rem;color:var(--orange)}
+.logo-grp{font-size:.75rem;font-weight:300;color:var(--lav);letter-spacing:2.5px;text-transform:uppercase;align-self:center}
+.role-badge{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:7px 16px;cursor:pointer;transition:background .2s}
+.role-badge:hover{background:rgba(255,255,255,.15)}
+.role-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.role-name{font-size:.75rem;font-weight:600;color:rgba(255,255,255,.85)}
+.role-change{font-size:.65rem;color:rgba(255,255,255,.4);margin-left:4px}
+.hdr-eyebrow{font-size:.62rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--orange);background:rgba(249,140,83,.12);border:1px solid rgba(249,140,83,.3);display:inline-block;padding:4px 12px;border-radius:100px;margin-bottom:12px}
+.hdr-title{font-family:'Playfair Display',serif;font-weight:700;font-size:2.2rem;color:var(--white);line-height:1.15;margin-bottom:6px}
+.hdr-title span{color:var(--coral)}
+.hdr-sub{font-size:.85rem;color:var(--lav);font-style:italic;margin-bottom:20px}
+.hdr-obj{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-left:3px solid var(--coral);border-radius:0 8px 8px 0;padding:12px 18px;margin-bottom:24px}
+.hdr-obj-label{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--lav);margin-bottom:4px}
+.hdr-obj p{font-size:.85rem;color:rgba(255,255,255,.82);line-height:1.6}
+
+/* ── PROGRESS BAR ── */
+.progress-bar-section{background:var(--navy);padding:0;border-bottom:1px solid rgba(255,255,255,.08)}
+.progress-inner{max-width:940px;margin:0 auto;padding:16px 32px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.progress-label{font-size:.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);flex-shrink:0}
+.progress-track{flex:1;min-width:120px;height:6px;background:rgba(255,255,255,.1);border-radius:100px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--coral),var(--orange));border-radius:100px;transition:width .5s ease}
+.progress-pct{font-size:.82rem;font-weight:700;color:var(--orange);flex-shrink:0;min-width:36px;text-align:right}
+.progress-phases{display:flex;gap:16px;flex-wrap:wrap}
+.phase-pip{display:flex;align-items:center;gap:6px;font-size:.7rem;color:rgba(255,255,255,.5)}
+.phase-pip .pip{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2)}
+.phase-pip.done .pip{background:var(--orange)}
+.phase-pip.active .pip{background:var(--coral);box-shadow:0 0 0 3px rgba(235,71,81,.3)}
+
+/* ── TABS ── */
+.tabs-bar{background:var(--white);border-bottom:1px solid var(--g200);position:sticky;top:0;z-index:50}
+.tabs-inner{max-width:940px;margin:0 auto;padding:0 32px;display:flex;gap:0}
+.tab-btn{padding:14px 20px;font-size:.78rem;font-weight:600;color:var(--g500);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s;white-space:nowrap}
+.tab-btn:hover{color:var(--navy)}
+.tab-btn.active{color:var(--coral);border-bottom-color:var(--coral)}
+.tab-count{background:var(--g100);color:var(--g500);font-size:.62rem;font-weight:700;padding:2px 6px;border-radius:100px;margin-left:5px}
+.tab-btn.active .tab-count{background:rgba(235,71,81,.12);color:var(--coral)}
+
+/* ── MAIN ── */
+.main{max-width:940px;margin:0 auto;padding:36px 32px 64px}
+.tab-section{display:none}
+.tab-section.active{display:block}
+
+/* ── SECTION HEADER ── */
+.sec-hdr{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.sec-acc{width:4px;height:32px;background:linear-gradient(180deg,var(--coral),var(--orange));border-radius:4px;flex-shrink:0}
+.sec-num{font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--lav)}
+.sec-title{font-family:'Playfair Display',serif;font-weight:700;font-size:1.35rem;color:var(--navy)}
+
+/* ── TIMELINE ── */
+.timeline-wrap{background:var(--white);border:1.5px solid var(--g200);border-radius:var(--r);padding:24px 28px;margin-bottom:32px;overflow-x:auto}
+.timeline{display:flex;align-items:flex-start;gap:0;min-width:600px;position:relative}
+.timeline::before{content:'';position:absolute;top:19px;left:20px;right:20px;height:2px;background:linear-gradient(90deg,var(--lav),var(--orange),var(--coral),var(--navy));z-index:0}
+.tl-item{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;z-index:1}
+.tl-node{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--white);margin-bottom:8px;flex-shrink:0;box-shadow:0 3px 8px rgba(0,0,0,.15)}
+.tl-node.milestone{box-shadow:0 0 0 4px var(--cream),0 4px 12px rgba(235,71,81,.3)}
+.tl-node.done{box-shadow:0 0 0 3px var(--orange)!important}
+.tl-label{font-size:.68rem;font-weight:700;color:var(--navy)}
+.tl-sub{font-size:.6rem;color:var(--g500)}
+.tl-status{font-size:.58rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-top:2px}
+.tl-status.done{color:var(--orange)}
+.tl-status.active{color:var(--coral)}
+.tl-status.pending{color:var(--g400)}
+
+/* ── PHASE CARDS ── */
+.phase-card{background:var(--white);border:1.5px solid var(--g200);border-radius:var(--r);margin-bottom:14px;overflow:hidden}
+.phase-hdr{display:flex;align-items:center;gap:14px;padding:18px 22px;cursor:pointer;user-select:none;transition:background .15s}
+.phase-hdr:hover{background:var(--g100)}
+.phase-num{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--white);flex-shrink:0}
+.phase-meta{flex:1}
+.phase-tag{font-size:.58rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;padding:2px 8px;border-radius:100px;margin-bottom:3px;display:inline-block}
+.phase-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--navy)}
+.phase-dur{font-size:.72rem;color:var(--g500);margin-top:1px}
+.phase-progress-wrap{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.phase-pct-label{font-size:.72rem;font-weight:700;color:var(--g500)}
+.mini-track{width:60px;height:5px;background:var(--g200);border-radius:100px;overflow:hidden}
+.mini-fill{height:100%;background:linear-gradient(90deg,var(--coral),var(--orange));border-radius:100px;transition:width .4s}
+.toggle-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--g100);font-size:.7rem;transition:transform .3s;flex-shrink:0}
+.phase-card.open .toggle-icon{transform:rotate(180deg)}
+
+.phase-body{display:none;padding:0 22px 22px;border-top:1px solid var(--g200)}
+.phase-card.open .phase-body{display:block}
+
+.phase-obj{background:var(--g100);border-radius:8px;padding:12px 14px;margin:16px 0;border-left:3px solid var(--coral)}
+.phase-obj-lbl{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--coral);margin-bottom:4px}
+.phase-obj-txt{font-size:.83rem;color:var(--navy);font-weight:500;line-height:1.55}
+
+/* Task lists */
+.task-section-lbl{font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--lav);margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.task-section-lbl::after{content:'';flex:1;height:1px;background:var(--g200)}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:7px;transition:background .15s;cursor:pointer;margin-bottom:3px}
+.task-item:hover{background:var(--g100)}
+.task-item.checked{opacity:.65}
+.task-item.checked .task-text{text-decoration:line-through;color:var(--g500)}
+.cb-wrap{flex-shrink:0;margin-top:2px}
+.cb{width:18px;height:18px;border:2px solid var(--g400);border-radius:5px;display:flex;align-items:center;justify-content:center;transition:all .15s;background:var(--white)}
+.cb.checked{background:var(--coral);border-color:var(--coral)}
+.cb-check{color:var(--white);font-size:.65rem;opacity:0}
+.cb.checked .cb-check{opacity:1}
+.task-text{font-size:.82rem;color:var(--navy);line-height:1.5;flex:1}
+.task-text strong{font-weight:600}
+.task-resp{font-size:.58rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:2px 7px;border-radius:100px;flex-shrink:0;margin-top:2px}
+.resp-coord{background:rgba(235,71,81,.1);color:var(--coral)}
+.resp-mkt{background:rgba(99,102,160,.12);color:var(--mkt)}
+.resp-all{background:rgba(38,40,63,.08);color:var(--navy)}
+.resp-victor{background:rgba(38,40,63,.08);color:var(--navy)}
+
+/* Deliverable items */
+.task-item.deliverable{background:rgba(249,140,83,.04);border:1px solid rgba(249,140,83,.2)}
+.task-item.deliverable:hover{background:rgba(249,140,83,.08)}
+.task-item.deliverable .cb{border-color:var(--orange)}
+.task-item.deliverable .cb.checked{background:var(--orange);border-color:var(--orange)}
+
+/* Phase complete button */
+.phase-complete-btn{width:100%;margin-top:16px;background:linear-gradient(90deg,var(--coral),var(--orange));color:var(--white);border:none;border-radius:8px;padding:12px;font-size:.85rem;font-weight:700;cursor:pointer;display:none;transition:opacity .2s}
+.phase-complete-btn:hover{opacity:.9}
+.phase-complete-btn.visible{display:block}
+.phase-done-badge{background:rgba(249,140,83,.1);border:1px solid rgba(249,140,83,.3);border-radius:8px;padding:10px 14px;margin-top:14px;display:none;align-items:center;gap:10px}
+.phase-done-badge.visible{display:flex}
+.phase-done-badge-icon{font-size:1.1rem}
+.phase-done-badge-text{font-size:.8rem;color:#c9601a;font-weight:500}
+.phase-done-badge-text strong{font-weight:700}
+
+/* ── MILESTONE CARDS ── */
+.milestone-card{background:var(--white);border:1.5px solid var(--g200);border-radius:var(--r);padding:22px 24px;margin-bottom:14px;position:relative;overflow:hidden}
+.milestone-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.h1-card::before{background:linear-gradient(90deg,var(--lav),#7a7fc0)}
+.hm-card::before{background:linear-gradient(90deg,#5b4fcf,#9b59b6)}
+.h2-card::before{background:linear-gradient(90deg,var(--orange),#f0ab6a)}
+.h3-card::before{background:linear-gradient(90deg,var(--coral),var(--orange))}
+.ms-top{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.ms-day{background:var(--navy);color:var(--white);font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;width:64px;height:64px;border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.ms-day span{font-size:.5rem;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;color:var(--lav);margin-top:3px}
+.ms-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--navy)}
+.ms-sub{font-size:.76rem;color:var(--g500);margin-top:2px}
+
+/* ── REPORTS SECTION ── */
+.report-card{background:var(--white);border:1.5px solid var(--g200);border-radius:var(--r);padding:22px 24px;margin-bottom:14px}
+.report-card-empty{text-align:center;padding:40px;color:var(--g400)}
+.report-card-empty .icon{font-size:2.5rem;margin-bottom:12px}
+.report-card-empty p{font-size:.85rem;line-height:1.6}
+.report-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}
+.report-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--navy)}
+.report-meta{font-size:.72rem;color:var(--g500);margin-top:3px}
+.report-badge{font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px;border-radius:100px;flex-shrink:0}
+.badge-coord{background:rgba(235,71,81,.1);color:var(--coral)}
+.badge-mkt{background:rgba(99,102,160,.12);color:var(--mkt)}
+.badge-victor{background:rgba(38,40,63,.08);color:var(--navy)}
+.report-notes{background:var(--g100);border-radius:7px;padding:12px 14px;font-size:.82rem;color:var(--navy);line-height:1.6;margin-top:10px}
+
+/* ── LOG SECTION ── */
+.log-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--g200)}
+.log-item:last-child{border-bottom:none}
+.log-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.log-text{font-size:.8rem;color:var(--navy);line-height:1.5;flex:1}
+.log-text span{color:var(--g500);font-size:.74rem}
+.log-empty{font-size:.83rem;color:var(--g400);text-align:center;padding:24px}
+
+/* ── ALERTS ── */
+.alerts-section{background:#fff9f0;border:2px solid #f5c67a;border-radius:var(--r);padding:24px;margin-bottom:0}
+.alerts-hdr{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.alert-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#7c4f0a}
+.alert-item{background:var(--white);border:1px solid #f5c67a;border-left:4px solid #E8A020;border-radius:8px;padding:14px 16px;margin-bottom:10px}
+.alert-item:last-child{margin-bottom:0}
+.alert-lbl{font-size:.58rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#E8A020;margin-bottom:5px}
+.alert-txt{font-size:.8rem;color:#4a3010;line-height:1.6}
+.alert-txt strong{font-weight:700}
+
+/* ── FOOTER ── */
+footer{background:var(--navy);padding:28px 32px 24px;margin-top:0}
+.footer-inner{max-width:940px;margin:0 auto}
+.palette-lbl{font-size:.6rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:12px}
+.palette-strip{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.swatch{display:flex;flex-direction:column;align-items:center;gap:6px}
+.sw-color{width:44px;height:44px;border-radius:7px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.sw-hex{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.7);font-family:'Courier New',monospace}
+.sw-name{font-size:.55rem;color:rgba(255,255,255,.3)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.footer-txt{font-size:.7rem;color:rgba(255,255,255,.25)}
+.footer-logo{font-family:'Playfair Display',serif;font-weight:800;font-size:.95rem;color:rgba(255,255,255,.12)}
+.footer-logo span{color:rgba(249,140,83,.3)}
+
+@media(max-width:640px){
+  .hdr-inner,.tabs-inner,.main,footer{padding-left:16px;padding-right:16px}
+  .hdr-title{font-size:1.7rem}
+  .timeline{min-width:500px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ ROLE MODAL ═══════════════════════════════════════ -->
+<div class="modal-overlay" id="roleModal">
+  <div class="modal-box">
+    <div class="modal-logo">amg<span>.</span></div>
+    <div class="modal-subtitle">Programa SEÑAL · Apps & Performance</div>
+    <div class="modal-title">¿Quién eres?</div>
+    <p class="modal-desc">Selecciona tu rol para personalizar tu vista del programa. Puedes cambiar de rol en cualquier momento desde el encabezado.</p>
+    <div class="role-buttons">
+      <div class="role-btn" onclick="selectRole('victor')" id="role-btn-victor">
+        <div class="role-btn-name">🔒 Victor — Administrador</div>
+        <div class="role-btn-desc">Vista completa. Aprobación de fases, hitos y reportes.</div>
+      </div>
+      <div class="role-btn" onclick="selectRole('mkt')" id="role-btn-mkt">
+        <div class="role-btn-name">📊 Gerente de Marketing</div>
+        <div class="role-btn-desc">Revisión y aprobación de entregables. Seguimiento del programa.</div>
+      </div>
+      <div class="role-btn" onclick="selectRole('coord')" id="role-btn-coord">
+        <div class="role-btn-name">🚀 Coordinador de Apps & Performance</div>
+        <div class="role-btn-desc">Ejecución de tareas. Vista de progreso personal y del programa.</div>
+      </div>
+    </div>
+    <button class="modal-confirm" id="modalConfirmBtn" onclick="confirmRole()" disabled>Entrar al programa</button>
+  </div>
+</div>
+
+<!-- ═══ REPORT MODAL ════════════════════════════════════ -->
+<div class="report-modal hidden" id="reportModal">
+  <div class="report-box">
+    <h3 id="reportModalTitle">Marcar fase como completada</h3>
+    <p id="reportModalDesc">Agrega notas sobre la finalización de esta etapa. Quedará registrado con tu nombre y la fecha de hoy.</p>
+    <textarea id="reportNotes" placeholder="Notas de cierre, observaciones, próximos pasos... (opcional)"></textarea>
+    <div class="report-actions">
+      <button class="btn-confirm-report" onclick="confirmReport()">Confirmar y guardar</button>
+      <button class="btn-cancel-report" onclick="closeReportModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HEADER ═══════════════════════════════════════════ -->
+<header class="header">
+  <div class="hdr-inner">
+    <div class="hdr-top">
+      <div class="logo">
+        <span class="logo-amg">amg</span>
+        <span class="logo-dot">.</span>
+        <span class="logo-grp">Hospitality Group</span>
+      </div>
+      <div class="role-badge" onclick="openRoleModal()" title="Cambiar rol">
+        <div class="role-dot" id="hdrRoleDot"></div>
+        <span class="role-name" id="hdrRoleName">—</span>
+        <span class="role-change">cambiar</span>
+      </div>
+    </div>
+    <div class="hdr-eyebrow">Programa de Onboarding · 2026</div>
+    <h1 class="hdr-title">Programa <span>SEÑAL</span></h1>
+    <p class="hdr-sub">Sistema de Entrada, Activación y Lanzamiento — Coordinación de Apps &amp; Performance</p>
+    <div class="hdr-obj">
+      <div class="hdr-obj-label">Objetivo general</div>
+      <p>En 90 días, el/la Coordinador/a de Apps &amp; Performance habrá tomado control total del ecosistema digital de AMG, ejecutado acciones medibles de crecimiento en las cuatro plataformas, y establecido el sistema de gestión que sostendrá el crecimiento de ventas digitales — con impacto verificable antes del día 60.</p>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ PROGRESS BAR ══════════════════════════════════════ -->
+<div class="progress-bar-section">
+  <div class="progress-inner">
+    <span class="progress-label">Avance global</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span class="progress-pct" id="progressPct">0%</span>
+    <div class="progress-phases" id="progressPhases"></div>
+  </div>
+</div>
+
+<!-- ═══ TABS ══════════════════════════════════════════════ -->
+<div class="tabs-bar">
+  <div class="tabs-inner">
+    <button class="tab-btn active" onclick="switchTab('programa',this)">Programa <span class="tab-count" id="cnt-programa">0/0</span></button>
+    <button class="tab-btn" onclick="switchTab('reportes',this)">Reportes <span class="tab-count" id="cnt-reportes">0</span></button>
+    <button class="tab-btn" onclick="switchTab('bitacora',this)">Bitácora <span class="tab-count" id="cnt-bitacora">0</span></button>
+    <button class="tab-btn" onclick="switchTab('alertas',this)">Alertas</button>
+  </div>
+</div>
+
+<!-- ═══ MAIN ══════════════════════════════════════════════ -->
+<main class="main">
+
+<!-- ════ TAB: PROGRAMA ════ -->
+<div class="tab-section active" id="tab-programa">
+
+  <!-- Timeline -->
+  <div class="timeline-wrap">
+    <div style="font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--lav);margin-bottom:16px">Línea de tiempo · 90 días</div>
+    <div class="timeline" id="timeline">
+      <div class="tl-item">
+        <div class="tl-node" style="background:var(--lav)" id="tln-f1">F1</div>
+        <div class="tl-label">Cartografía</div>
+        <div class="tl-sub">Días 1–14</div>
+        <div class="tl-status pending" id="tls-f1">pendiente</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-node milestone" style="background:var(--lav)" id="tln-h1">H1</div>
+        <div class="tl-label">Hito 1</div>
+        <div class="tl-sub">Día 15</div>
+        <div class="tl-status pending" id="tls-h1">pendiente</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-node milestone" style="background:#7b68cc" id="tln-hm">★</div>
+        <div class="tl-label">Meta Ads</div>
+        <div class="tl-sub">Día 21</div>
+        <div class="tl-status pending" id="tls-hm">pendiente</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-node" style="background:var(--orange)" id="tln-f2">F2</div>
+        <div class="tl-label">Encendido</div>
+        <div class="tl-sub">Días 15–30</div>
+        <div class="tl-status pending" id="tls-f2">pendiente</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-node milestone" style="background:var(--orange)" id="tln-h2">H2</div>
+        <div class="tl-label">Hito 2</div>
+        <div class="tl-sub">Día 30</div>
+        <div class="tl-status pending" id="tls-h2">pendiente</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-node" style="background:var(--coral)" id="tln-f3">F3</div>
+        <div class="tl-label">Tracción</div>
+        <div class="tl-sub">Días 31–60</div>
+        <div class="tl-status pending" id="tls-f3">pendiente</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-node milestone" style="background:var(--coral)" id="tln-h3">H3</div>
+        <div class="tl-label">Hito 3</div>
+        <div class="tl-sub">Día 60</div>
+        <div class="tl-status pending" id="tls-h3">pendiente</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-node" style="background:var(--navy)" id="tln-f4">F4</div>
+        <div class="tl-label">Sistema</div>
+        <div class="tl-sub">Días 61–90</div>
+        <div class="tl-status pending" id="tls-f4">pendiente</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FASE 1 ══ -->
+  <div class="sec-hdr"><div class="sec-acc"></div><div><div class="sec-num">Fases del programa</div><h2 class="sec-title">Seguimiento de actividades y entregables</h2></div></div>
+
+  <div class="phase-card open" id="card-f1">
+    <div class="phase-hdr" onclick="togglePhase('f1')">
+      <div class="phase-num" style="background:var(--lav)">1</div>
+      <div class="phase-meta">
+        <span class="phase-tag" style="background:rgba(163,167,198,.15);color:#6366a0">Días 1–14</span>
+        <div class="phase-title">Cartografía — Antes de mover, entender todo</div>
+        <div class="phase-dur">2 semanas · Diagnóstico e inmersión total</div>
+      </div>
+      <div class="phase-progress-wrap">
+        <span class="phase-pct-label" id="pct-f1">0%</span>
+        <div class="mini-track"><div class="mini-fill" id="fill-f1" style="width:0%"></div></div>
+      </div>
+      <div class="toggle-icon">▾</div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-obj"><div class="phase-obj-lbl">Objetivo</div><p class="phase-obj-txt">Tener una imagen fiel del estado actual de AMG en cada plataforma: qué funciona, qué está roto, qué oportunidad es evidente. Sin actuar aún — solo entender.</p></div>
+
+      <div class="task-section-lbl">Actividades</div>
+      <div id="tasks-f1"></div>
+
+      <div class="task-section-lbl">Entregables</div>
+      <div id="deliverables-f1"></div>
+
+      <button class="phase-complete-btn" id="complete-btn-f1" onclick="openReportModal('f1','Fase 1 — Cartografía')">✓ Marcar Fase 1 como completada</button>
+      <div class="phase-done-badge" id="done-badge-f1"><span class="phase-done-badge-icon">🏁</span><span class="phase-done-badge-text"><strong id="done-text-f1"></strong></span></div>
+    </div>
+  </div>
+
+  <!-- ══ HITO 1 ══ -->
+  <div class="milestone-card h1-card" id="card-h1">
+    <div class="ms-top">
+      <div class="ms-day">15<span>Día</span></div>
+      <div><div class="ms-title">Hito 1 — Validación del Diagnóstico de Plataformas</div><div class="ms-sub">¿La persona entiende el ecosistema delivery y sabe dónde está la oportunidad?</div></div>
+    </div>
+    <div id="tasks-h1"></div>
+    <button class="phase-complete-btn" id="complete-btn-h1" onclick="openReportModal('h1','Hito 1 — Validación del Diagnóstico')">✓ Marcar Hito 1 como completado</button>
+    <div class="phase-done-badge" id="done-badge-h1"><span class="phase-done-badge-icon">✅</span><span class="phase-done-badge-text"><strong id="done-text-h1"></strong></span></div>
+  </div>
+
+  <!-- ══ HITO META ADS ══ -->
+  <div class="milestone-card hm-card" id="card-hm">
+    <div class="ms-top">
+      <div class="ms-day" style="background:#5b4fcf">21<span>Día</span></div>
+      <div><div class="ms-title">Hito Meta Ads — Diagnóstico de Campañas en Meta</div><div class="ms-sub">Revisión, evaluación y diagnóstico detallado de las campañas activas en Meta para todas las marcas AMG</div></div>
+    </div>
+    <div class="phase-obj" style="margin-top:0;margin-bottom:14px"><div class="phase-obj-lbl" style="color:#5b4fcf">Alcance del diagnóstico</div><p class="phase-obj-txt">Evaluar el estado actual de todas las campañas activas en Meta (Facebook e Instagram Ads) por marca: presupuesto, creatividades, públicos, métricas de desempeño y conexión con el ecosistema digital de AMG. Identificar qué está funcionando, qué no, y qué se puede mejorar.</p></div>
+    <div id="tasks-hm"></div>
+    <button class="phase-complete-btn" id="complete-btn-hm" onclick="openReportModal('hm','Hito Meta Ads — Diagnóstico de Campañas')" style="background:linear-gradient(90deg,#5b4fcf,#9b59b6)">✓ Marcar Hito Meta Ads como completado</button>
+    <div class="phase-done-badge" id="done-badge-hm"><span class="phase-done-badge-icon">✅</span><span class="phase-done-badge-text"><strong id="done-text-hm"></strong></span></div>
+  </div>
+
+  <!-- ══ FASE 2 ══ -->
+  <div class="phase-card" id="card-f2">
+    <div class="phase-hdr" onclick="togglePhase('f2')">
+      <div class="phase-num" style="background:var(--orange)">2</div>
+      <div class="phase-meta">
+        <span class="phase-tag" style="background:rgba(249,140,83,.15);color:#c9601a">Días 15–30</span>
+        <div class="phase-title">Encendido — Mover la aguja sin romper nada</div>
+        <div class="phase-dur">2 semanas · Quick wins y correcciones de calidad</div>
+      </div>
+      <div class="phase-progress-wrap">
+        <span class="phase-pct-label" id="pct-f2">0%</span>
+        <div class="mini-track"><div class="mini-fill" id="fill-f2" style="width:0%"></div></div>
+      </div>
+      <div class="toggle-icon">▾</div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-obj"><div class="phase-obj-lbl">Objetivo</div><p class="phase-obj-txt">Ejecutar las oportunidades de bajo esfuerzo y alto impacto del diagnóstico, asegurar que todas las marcas AMG estén en estándar visual en todas las plataformas, y lanzar la primera campaña Foodbot antes del día 30.</p></div>
+      <div class="task-section-lbl">Actividades</div>
+      <div id="tasks-f2"></div>
+      <div class="task-section-lbl">Entregables</div>
+      <div id="deliverables-f2"></div>
+      <button class="phase-complete-btn" id="complete-btn-f2" onclick="openReportModal('f2','Fase 2 — Encendido')" style="background:linear-gradient(90deg,var(--orange),#f0ab6a)">✓ Marcar Fase 2 como completada</button>
+      <div class="phase-done-badge" id="done-badge-f2"><span class="phase-done-badge-icon">🏁</span><span class="phase-done-badge-text"><strong id="done-text-f2"></strong></span></div>
+    </div>
+  </div>
+
+  <!-- ══ HITO 2 ══ -->
+  <div class="milestone-card h2-card" id="card-h2">
+    <div class="ms-top">
+      <div class="ms-day" style="background:var(--orange)">30<span>Día</span></div>
+      <div><div class="ms-title">Hito 2 — Quick Wins Ejecutados y Calidad Verificada</div><div class="ms-sub">¿La persona ejecuta? ¿Las plataformas están en estándar? ¿Foodbot está activo?</div></div>
+    </div>
+    <div id="tasks-h2"></div>
+    <button class="phase-complete-btn" id="complete-btn-h2" onclick="openReportModal('h2','Hito 2 — Quick Wins y Calidad')" style="background:linear-gradient(90deg,var(--orange),#f0ab6a)">✓ Marcar Hito 2 como completado</button>
+    <div class="phase-done-badge" id="done-badge-h2"><span class="phase-done-badge-icon">✅</span><span class="phase-done-badge-text"><strong id="done-text-h2"></strong></span></div>
+  </div>
+
+  <!-- ══ FASE 3 ══ -->
+  <div class="phase-card" id="card-f3">
+    <div class="phase-hdr" onclick="togglePhase('f3')">
+      <div class="phase-num" style="background:var(--coral)">3</div>
+      <div class="phase-meta">
+        <span class="phase-tag" style="background:rgba(235,71,81,.12);color:var(--coral)">Días 31–60</span>
+        <div class="phase-title">Tracción — Gestión activa y primer crecimiento medible</div>
+        <div class="phase-dur">4 semanas · Primera evidencia de impacto en ventas</div>
+      </div>
+      <div class="phase-progress-wrap">
+        <span class="phase-pct-label" id="pct-f3">0%</span>
+        <div class="mini-track"><div class="mini-fill" id="fill-f3" style="width:0%"></div></div>
+      </div>
+      <div class="toggle-icon">▾</div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-obj"><div class="phase-obj-lbl">Objetivo</div><p class="phase-obj-txt">Pasar de ejecutar correcciones a gestionar activamente el crecimiento: evaluar y activar campañas, negociar visibilidad con plataformas, y producir el primer mes con crecimiento MoM verificable en al menos dos canales.</p></div>
+      <div class="task-section-lbl">Actividades</div>
+      <div id="tasks-f3"></div>
+      <div class="task-section-lbl">Entregables</div>
+      <div id="deliverables-f3"></div>
+      <button class="phase-complete-btn" id="complete-btn-f3" onclick="openReportModal('f3','Fase 3 — Tracción')">✓ Marcar Fase 3 como completada</button>
+      <div class="phase-done-badge" id="done-badge-f3"><span class="phase-done-badge-icon">🏁</span><span class="phase-done-badge-text"><strong id="done-text-f3"></strong></span></div>
+    </div>
+  </div>
+
+  <!-- ══ HITO 3 ══ -->
+  <div class="milestone-card h3-card" id="card-h3">
+    <div class="ms-top">
+      <div class="ms-day" style="background:var(--coral)">60<span>Día</span></div>
+      <div><div class="ms-title">Hito 3 — Primer Crecimiento MoM Verificable</div><div class="ms-sub">¿El puesto está generando impacto medible en ventas? ¿Foodbot muestra movimiento positivo?</div></div>
+    </div>
+    <div id="tasks-h3"></div>
+    <button class="phase-complete-btn" id="complete-btn-h3" onclick="openReportModal('h3','Hito 3 — Primer Crecimiento MoM')">✓ Marcar Hito 3 como completado</button>
+    <div class="phase-done-badge" id="done-badge-h3"><span class="phase-done-badge-icon">✅</span><span class="phase-done-badge-text"><strong id="done-text-h3"></strong></span></div>
+  </div>
+
+  <!-- ══ FASE 4 ══ -->
+  <div class="phase-card" id="card-f4">
+    <div class="phase-hdr" onclick="togglePhase('f4')">
+      <div class="phase-num" style="background:var(--navy)">4</div>
+      <div class="phase-meta">
+        <span class="phase-tag" style="background:rgba(38,40,63,.08);color:var(--navy)">Días 61–90</span>
+        <div class="phase-title">Sistema — Consolidar, optimizar y construir para escalar</div>
+        <div class="phase-dur">4 semanas · Operación autónoma y plan de crecimiento</div>
+      </div>
+      <div class="phase-progress-wrap">
+        <span class="phase-pct-label" id="pct-f4">0%</span>
+        <div class="mini-track"><div class="mini-fill" id="fill-f4" style="width:0%"></div></div>
+      </div>
+      <div class="toggle-icon">▾</div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-obj"><div class="phase-obj-lbl">Objetivo</div><p class="phase-obj-txt">Construir el sistema que sostendrá el crecimiento digital de AMG: cadencias de reporte, dashboards de seguimiento, plantilla de evaluación de campañas y plan de crecimiento para el siguiente trimestre.</p></div>
+      <div class="task-section-lbl">Actividades</div>
+      <div id="tasks-f4"></div>
+      <div class="task-section-lbl">Entregables</div>
+      <div id="deliverables-f4"></div>
+      <button class="phase-complete-btn" id="complete-btn-f4" onclick="openReportModal('f4','Fase 4 — Sistema')" style="background:linear-gradient(90deg,var(--navy),#3d3f6b)">✓ Marcar Fase 4 como completada — Programa SEÑAL concluido</button>
+      <div class="phase-done-badge" id="done-badge-f4"><span class="phase-done-badge-icon">🏆</span><span class="phase-done-badge-text"><strong id="done-text-f4"></strong></span></div>
+    </div>
+  </div>
+
+</div><!-- end tab-programa -->
+
+<!-- ════ TAB: REPORTES ════ -->
+<div class="tab-section" id="tab-reportes">
+  <div class="sec-hdr"><div class="sec-acc"></div><div><div class="sec-num">02 · Reportes</div><h2 class="sec-title">Cierres de fase e hitos completados</h2></div></div>
+  <div id="reports-list">
+    <div class="report-card report-card-empty"><div class="icon">📋</div><p>Aún no hay reportes. Cuando una fase o hito sea marcado como completado, aparecerá aquí con las notas y la fecha de cierre.</p></div>
+  </div>
+</div>
+
+<!-- ════ TAB: BITÁCORA ════ -->
+<div class="tab-section" id="tab-bitacora">
+  <div class="sec-hdr"><div class="sec-acc"></div><div><div class="sec-num">03 · Bitácora</div><h2 class="sec-title">Registro de actividad del programa</h2></div></div>
+  <div style="background:var(--white);border:1.5px solid var(--g200);border-radius:var(--r);padding:20px 24px">
+    <div id="log-list"><div class="log-empty">La bitácora está vacía. Cada tarea completada y reporte generado quedará registrado aquí con fecha y autor.</div></div>
+  </div>
+</div>
+
+<!-- ════ TAB: ALERTAS ════ -->
+<div class="tab-section" id="tab-alertas">
+  <div class="sec-hdr"><div class="sec-acc"></div><div><div class="sec-num">04 · Alertas</div><h2 class="sec-title">Riesgos de implementación</h2></div></div>
+  <div class="alerts-section">
+    <div class="alerts-hdr"><span style="font-size:1.3rem">⚠️</span><div><div class="alert-title">Alertas del programa</div></div></div>
+    <div class="alert-item"><div class="alert-lbl">Crítica — Vacío de información histórica</div><p class="alert-txt">El puesto no existía. Probablemente <strong>no hay historial estructurado de reportes ni métricas consolidadas</strong>. Marketing debe compilar todo lo disponible antes del día de ingreso, aunque esté desordenado.</p></div>
+    <div class="alert-item"><div class="alert-lbl">Operativa — Accesos a plataformas</div><p class="alert-txt">Uber Eats, Rappi y DiDi pueden tardar días en procesar cambios de usuario administrador. <strong>Los accesos deben solicitarse al menos una semana antes del ingreso.</strong></p></div>
+    <div class="alert-item"><div class="alert-lbl">Meta Ads — Acceso al Business Manager</div><p class="alert-txt">Para el diagnóstico de campañas Meta, el Coordinador necesita acceso de <strong>analista (no administrador) al Business Manager de AMG.</strong> Confirmar con Marketing quién gestiona actualmente las cuentas publicitarias y cuál es el proceso de acceso. Dato pendiente: confirmar con Gestión de Marketing.</p></div>
+    <div class="alert-item"><div class="alert-lbl">Estratégica — Foodbot sin datos base</div><p class="alert-txt">Si Foodbot tiene actividad mínima, el baseline puede ser engañoso como métrica. <strong>Dato pendiente: confirmar el volumen real de Foodbot antes de establecer metas.</strong></p></div>
+    <div class="alert-item"><div class="alert-lbl">Gobernanza — Límites de autonomía</div><p class="alert-txt">Marketing debe definir explícitamente antes del día 1 <strong>qué campañas puede aprobar el Coordinador sin consultar</strong>, cuánto descuento puede autorizar y qué compromisos requieren aprobación superior.</p></div>
+    <div class="alert-item"><div class="alert-lbl">Expectativa — Metas numéricas sin definir</div><p class="alert-txt">El programa establece crecimiento MoM como KPI pero <strong>el % esperado no está definido.</strong> Dato pendiente: confirmar con Gestión de Marketing qué crecimiento mínimo se considera exitoso al día 60.</p></div>
+  </div>
+</div>
+
+</main>
+
+<!-- ═══ FOOTER ═══════════════════════════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="palette-lbl">Paleta de marca · AMG Brandbook</div>
+    <div class="palette-strip">
+      <div class="swatch"><div class="sw-color" style="background:#EB4751"></div><div class="sw-hex">#EB4751</div><div class="sw-name">Coral Red</div></div>
+      <div class="swatch"><div class="sw-color" style="background:#F98C53"></div><div class="sw-hex">#F98C53</div><div class="sw-name">Orange</div></div>
+      <div class="swatch"><div class="sw-color" style="background:#A3A7C6"></div><div class="sw-hex">#A3A7C6</div><div class="sw-name">Lavender</div></div>
+      <div class="swatch"><div class="sw-color" style="background:#26283F"></div><div class="sw-hex">#26283F</div><div class="sw-name">Navy</div></div>
+      <div class="swatch"><div class="sw-color" style="background:#FAF9F7;border:1px solid rgba(255,255,255,.2)"></div><div class="sw-hex">#FAF9F7</div><div class="sw-name">Cream</div></div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-txt">AMG Hospitality Group · Programa SEÑAL · Onboarding Apps &amp; Performance · Mayo 2026</span>
+      <span class="footer-logo">amg<span>.</span></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════
+// TASK DATA
+// ═══════════════════════════════════════════════
+const TASKS = {
+  f1:[
+    {id:'f1_t1',text:'Auditoría visual en <strong>Uber Eats</strong> — todas las marcas AMG (menús, fotos, precios, descripciones, horarios)',resp:'coord'},
+    {id:'f1_t2',text:'Auditoría visual en <strong>Rappi</strong> — todas las marcas AMG',resp:'coord'},
+    {id:'f1_t3',text:'Auditoría visual en <strong>DiDi Food</strong> — todas las marcas AMG',resp:'coord'},
+    {id:'f1_t4',text:'Auditoría y exploración completa de <strong>Foodbot</strong> — catálogo, pedidos, panel de administración',resp:'coord'},
+    {id:'f1_t5',text:'Extracción de datos de ventas <strong>últimas 8 semanas</strong> por plataforma y marca',resp:'coord'},
+    {id:'f1_t6',text:'Primera llamada de presentación con <strong>Account Manager Uber Eats</strong>',resp:'coord'},
+    {id:'f1_t7',text:'Primera llamada de presentación con <strong>Account Manager Rappi</strong>',resp:'coord'},
+    {id:'f1_t8',text:'Primera llamada de presentación con <strong>Account Manager DiDi Food</strong>',resp:'coord'},
+    {id:'f1_t9',text:'<strong>Sesión de contexto con Gestión de Marketing</strong> (mínimo 4 horas): qué se intentó antes, qué no funcionó, marcas con más potencial digital',resp:'all'},
+    {id:'f1_t10',text:'Mapa de actores internos: <strong>quién en cocina y operaciones</strong> aprueba cambios por marca',resp:'coord'},
+    {id:'f1_t11',text:'Revisión de <strong>últimos 3 MBRs</strong> disponibles por plataforma',resp:'coord'},
+  ],
+  f1d:[
+    {id:'f1_d1',text:'<strong>Diagnóstico de Estado Actual</strong> — matriz marca × plataforma: ventas, ticket promedio, rating, estatus visual, observaciones críticas',resp:'coord'},
+    {id:'f1_d2',text:'<strong>Mapa de Quick Wins</strong> — 5 a 8 oportunidades priorizadas por impacto y esfuerzo de implementación',resp:'coord'},
+    {id:'f1_d3',text:'<strong>Diagnóstico Foodbot</strong> — volumen actual, % vs. apps externas, hallazgos de catálogo, primeras acciones propuestas',resp:'coord'},
+    {id:'f1_d4',text:'<strong>Directorio de Account Managers</strong> — nombre, plataforma, contacto y próxima reunión agendada',resp:'coord'},
+  ],
+  h1:[
+    {id:'h1_t1',text:'<strong>Presentación del Diagnóstico</strong> de Estado Actual y Mapa de Quick Wins a Gestión de Marketing',resp:'coord'},
+    {id:'h1_t2',text:'<strong>Revisión y validación</strong> del diagnóstico por parte de Gestión de Marketing — contraste con contexto interno',resp:'mkt'},
+    {id:'h1_t3',text:'<strong>Aprobación de al menos 3 Quick Wins</strong> para ejecución inmediata en Fase 2',resp:'mkt'},
+    {id:'h1_t4',text:'Definición de <strong>prioridades y foco</strong> para Fase 2 acordadas entre Gestión de Marketing y Coordinador',resp:'all'},
+  ],
+  hm:[
+    {id:'hm_t1',text:'<strong>Inventario completo</strong> de todas las campañas Meta activas e inactivas por marca AMG',resp:'coord'},
+    {id:'hm_t2',text:'Revisión de <strong>presupuesto asignado</strong> por campaña y marca (diario / mensual / total)',resp:'coord'},
+    {id:'hm_t3',text:'Análisis de métricas clave por campaña: <strong>CTR, CPC, CPM, ROAS, alcance, frecuencia e impresiones</strong>',resp:'coord'},
+    {id:'hm_t4',text:'Revisión de <strong>creatividades activas</strong> por marca: copy, imágenes/video, call to action, alineación con identidad de marca',resp:'coord'},
+    {id:'hm_t5',text:'Revisión de <strong>públicos objetivo configurados</strong>: intereses, demografía, retargeting, lookalikes por marca',resp:'coord'},
+    {id:'hm_t6',text:'Verificación de <strong>Pixel de Meta instalado y activo</strong> — especialmente en Foodbot y sitios de las marcas',resp:'coord'},
+    {id:'hm_t7',text:'Identificación de campañas con <strong>bajo desempeño o sin ROI claro</strong> — candidatas a pausar o reestructurar',resp:'coord'},
+    {id:'hm_t8',text:'Revisión de si las campañas Meta están <strong>generando tráfico hacia Foodbot</strong> o solo hacia plataformas externas',resp:'coord'},
+    {id:'hm_d1',text:'<strong>[Entregable] Reporte Diagnóstico Meta Ads</strong> — por marca: métricas actuales, creatividades vigentes, públicos configurados, hallazgos críticos y recomendaciones priorizadas',resp:'coord'},
+    {id:'hm_r1',text:'<strong>Presentación del Diagnóstico Meta Ads</strong> a Gestión de Marketing y Victor',resp:'coord'},
+    {id:'hm_r2',text:'<strong>Validación y aprobación</strong> del diagnóstico Meta Ads — acuerdo sobre acciones prioritarias',resp:'all'},
+  ],
+  f2:[
+    {id:'f2_t1',text:'Corrección de todos los errores visuales en <strong>Uber Eats</strong> — fotos faltantes, precios desactualizados, descripciones incorrectas',resp:'coord'},
+    {id:'f2_t2',text:'Corrección de todos los errores visuales en <strong>Rappi</strong> — todas las marcas',resp:'coord'},
+    {id:'f2_t3',text:'Corrección de todos los errores visuales en <strong>DiDi Food</strong> — todas las marcas',resp:'coord'},
+    {id:'f2_t4',text:'Optimización y actualización del <strong>catálogo Foodbot</strong> — nombres, descripciones, fotos, estructura del menú digital',resp:'coord'},
+    {id:'f2_t5',text:'Ejecución de <strong>Quick Win #1</strong> (aprobado en Hito 1) con registro de métricas pre/post',resp:'coord'},
+    {id:'f2_t6',text:'Ejecución de <strong>Quick Win #2</strong> (aprobado en Hito 1) con registro de métricas pre/post',resp:'coord'},
+    {id:'f2_t7',text:'Ejecución de <strong>Quick Win #3</strong> (aprobado en Hito 1) con registro de métricas pre/post',resp:'coord'},
+    {id:'f2_t8',text:'Primera reunión formal con <strong>AM Uber Eats</strong> — presentación como nuevo interlocutor, establecer cadencia mensual',resp:'coord'},
+    {id:'f2_t9',text:'Primera reunión formal con <strong>AM Rappi</strong>',resp:'coord'},
+    {id:'f2_t10',text:'Primera reunión formal con <strong>AM DiDi Food</strong>',resp:'coord'},
+    {id:'f2_t11',text:'<strong>Lanzamiento primera campaña Foodbot</strong> — incentivo de primer pedido, descuento o notificación push a usuarios existentes',resp:'coord'},
+    {id:'f2_t12',text:'Primera <strong>revisión semanal de métricas</strong> con Gestión de Marketing (formato: métricas / acciones / decisiones)',resp:'all'},
+  ],
+  f2d:[
+    {id:'f2_d1',text:'<strong>Reporte de Quick Wins Ejecutados</strong> — tabla con cada acción, fecha, plataforma/marca, métrica pre-acción vs. post-acción',resp:'coord'},
+    {id:'f2_d2',text:'<strong>Matriz de Calidad Actualizada</strong> — estatus "corregido" vs. "pendiente" con fecha de resolución esperada',resp:'coord'},
+    {id:'f2_d3',text:'<strong>Catálogo Foodbot v1.0</strong> activo con fotografías, descripciones y estructura optimizada',resp:'coord'},
+    {id:'f2_d4',text:'<strong>Calendario de contacto con Account Managers</strong> — próximo mes, objetivo de cada reunión y punto de negociación a preparar',resp:'coord'},
+  ],
+  h2:[
+    {id:'h2_t1',text:'Presentación del <strong>Reporte de Quick Wins</strong> y Matriz de Calidad',resp:'coord'},
+    {id:'h2_t2',text:'<strong>Verificación en vivo</strong> de las plataformas durante la sesión — revisión directa en apps',resp:'all'},
+    {id:'h2_t3',text:'Confirmación de <strong>Catálogo Foodbot v1.0 activo</strong> y primera campaña lanzada',resp:'mkt'},
+    {id:'h2_t4',text:'<strong>Evaluación y decisión de continuidad</strong> a Fase 3',resp:'all'},
+  ],
+  f3:[
+    {id:'f3_t1',text:'Evaluación de <strong>Propuesta de Campaña #1</strong> — documento de criterio de rentabilidad (aprobada o rechazada con justificación)',resp:'coord'},
+    {id:'f3_t2',text:'Evaluación de <strong>Propuesta de Campaña #2</strong> — criterio documentado',resp:'coord'},
+    {id:'f3_t3',text:'Activación de <strong>primera campaña AMG</strong> negociada directamente con plataforma',resp:'coord'},
+    {id:'f3_t4',text:'<strong>Segunda campaña Foodbot</strong> — enfocada en reorden de usuarios que ya compraron',resp:'coord'},
+    {id:'f3_t5',text:'Revisión semanal <strong>semana 5</strong> (métricas actuales / acciones ejecutadas / decisiones pendientes)',resp:'all'},
+    {id:'f3_t6',text:'Revisión semanal <strong>semana 6</strong>',resp:'all'},
+    {id:'f3_t7',text:'Revisión semanal <strong>semana 7</strong>',resp:'all'},
+    {id:'f3_t8',text:'Revisión semanal <strong>semana 8</strong>',resp:'all'},
+    {id:'f3_t9',text:'Consolidación datos MBR <strong>Uber Eats</strong> — todas las marcas del período',resp:'coord'},
+    {id:'f3_t10',text:'Consolidación datos MBR <strong>Rappi</strong> — todas las marcas',resp:'coord'},
+    {id:'f3_t11',text:'Consolidación datos MBR <strong>DiDi Food</strong> — todas las marcas',resp:'coord'},
+    {id:'f3_t12',text:'Consolidación datos <strong>Foodbot</strong> — comparativo Mes 1 vs. Mes 2 tras optimizaciones',resp:'coord'},
+  ],
+  f3d:[
+    {id:'f3_d1',text:'<strong>Primer MBR Interno AMG</strong> — reporte consolidado de 4 plataformas con métricas, comparativo vs. período base, conclusiones y plan de acción',resp:'coord'},
+    {id:'f3_d2',text:'<strong>Reporte de Campañas Evaluadas</strong> — tabla con propuestas recibidas, criterio de decisión y resultado si fue activada',resp:'coord'},
+    {id:'f3_d3',text:'<strong>Datos Foodbot comparativo Mes 1 vs. Mes 2</strong> — ventas, tasa de conversión, tasa de reorden, ticket promedio',resp:'coord'},
+    {id:'f3_d4',text:'<strong>Mapa de Oportunidades Q+1</strong> — 3 a 5 oportunidades con plataforma, marca, acción propuesta e impacto estimado',resp:'coord'},
+  ],
+  h3:[
+    {id:'h3_t1',text:'Presentación formal del <strong>primer MBR Interno AMG</strong>',resp:'coord'},
+    {id:'h3_t2',text:'Revisión de <strong>crecimiento MoM</strong> en plataformas — ¿al menos 2 de 3 positivas?',resp:'all'},
+    {id:'h3_t3',text:'Evaluación de <strong>resultados Foodbot</strong> — movimiento positivo en al menos un indicador',resp:'all'},
+    {id:'h3_t4',text:'Revisión y aprobación del <strong>Mapa de Oportunidades Q+1</strong>',resp:'all'},
+    {id:'h3_t5',text:'<strong>Decisión formal</strong> de transición a Fase 4 del programa',resp:'all'},
+  ],
+  f4:[
+    {id:'f4_t1',text:'Diseño y construcción del <strong>Dashboard KPIs AMG Digital</strong> — métricas semanales y mensuales por canal y marca',resp:'coord'},
+    {id:'f4_t2',text:'Diseño de <strong>plantilla estándar de evaluación de campañas</strong> — criterios fijos, umbrales de aprobación, proceso de escalación',resp:'coord'},
+    {id:'f4_t3',text:'Redacción del <strong>Manual Operativo del Puesto v1.0</strong> — ecosistema, cadencias, contactos, procesos críticos',resp:'coord'},
+    {id:'f4_t4',text:'Elaboración del <strong>Plan de Crecimiento Digital Q+1</strong> — objetivos por plataforma, acciones, responsables, fechas',resp:'coord'},
+    {id:'f4_t5',text:'Revisión y ajuste del <strong>Plan Q+1</strong> con Gestión de Marketing',resp:'all'},
+    {id:'f4_t6',text:'Coordinación con equipo de tecnología — <strong>propuestas de mejora operativa Foodbot</strong>',resp:'coord'},
+    {id:'f4_t7',text:'Definición de <strong>estrategia Foodbot Q+1</strong> dentro del Plan de Crecimiento',resp:'coord'},
+    {id:'f4_t8',text:'Revisión semanal <strong>semana 9</strong>',resp:'all'},
+    {id:'f4_t9',text:'Revisión semanal <strong>semana 10</strong>',resp:'all'},
+    {id:'f4_t10',text:'Revisión semanal <strong>semana 11</strong>',resp:'all'},
+    {id:'f4_t11',text:'Revisión semanal <strong>semana 12</strong>',resp:'all'},
+  ],
+  f4d:[
+    {id:'f4_d1',text:'<strong>Dashboard KPIs AMG Digital</strong> — listo y en uso, con semáforo de desempeño',resp:'coord'},
+    {id:'f4_d2',text:'<strong>Plantilla de Evaluación de Campañas</strong> — herramienta reutilizable aprobada por Marketing',resp:'coord'},
+    {id:'f4_d3',text:'<strong>Plan de Crecimiento Digital Q+1</strong> — presentado y aprobado por Gestión de Marketing y Victor',resp:'all'},
+    {id:'f4_d4',text:'<strong>Manual Operativo del Puesto v1.0</strong> — guía completa del ecosistema, procesos y contactos',resp:'coord'},
+  ],
+};
+
+const SECTIONS = [
+  {id:'f1',tasks:'f1',deliverables:'f1d'},
+  {id:'h1',tasks:'h1'},
+  {id:'hm',tasks:'hm'},
+  {id:'f2',tasks:'f2',deliverables:'f2d'},
+  {id:'h2',tasks:'h2'},
+  {id:'f3',tasks:'f3',deliverables:'f3d'},
+  {id:'h3',tasks:'h3'},
+  {id:'f4',tasks:'f4',deliverables:'f4d'},
+];
+
+const ROLE_LABELS = {victor:'Victor',mkt:'Gerente de Marketing',coord:'Coordinador'};
+const ROLE_COLORS = {victor:'#26283F',mkt:'#6366a0',coord:'#EB4751'};
+const RESP_LABELS = {coord:'Coordinador',mkt:'Mkt',all:'Conjunto',victor:'Victor'};
+
+const SK = 'amg_signal_v2';
+let STATE = loadState();
+let pendingReport = null;
+let selectedRole = null;
+
+function loadState(){
+  try{return JSON.parse(localStorage.getItem(SK))||{tasks:{},reports:{},log:[]};}
+  catch(e){return{tasks:{},reports:{},log:[]};}
+}
+function saveState(){localStorage.setItem(SK,JSON.stringify(STATE));}
+
+// ── ROLE ──
+function selectRole(r){
+  selectedRole=r;
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('role-btn-'+r).classList.add('selected');
+  document.getElementById('modalConfirmBtn').disabled=false;
+}
+function confirmRole(){
+  if(!selectedRole)return;
+  STATE.role=selectedRole;
+  saveState();
+  document.getElementById('roleModal').classList.add('hidden');
+  applyRole();
+}
+function openRoleModal(){
+  selectedRole=STATE.role||null;
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('selected'));
+  if(selectedRole){
+    document.getElementById('role-btn-'+selectedRole).classList.add('selected');
+    document.getElementById('modalConfirmBtn').disabled=false;
+  }
+  document.getElementById('roleModal').classList.remove('hidden');
+}
+function applyRole(){
+  const r=STATE.role||'coord';
+  document.getElementById('hdrRoleDot').style.background=ROLE_COLORS[r];
+  document.getElementById('hdrRoleName').textContent=ROLE_LABELS[r];
+}
+
+// ── RENDER TASKS ──
+function renderTasks(){
+  SECTIONS.forEach(s=>{
+    const tArr=TASKS[s.tasks]||[];
+    const dArr=s.deliverables?TASKS[s.deliverables]:[];
+    const tEl=document.getElementById('tasks-'+s.id);
+    const dEl=document.getElementById('deliverables-'+s.id);
+    if(tEl)tEl.innerHTML=tArr.map(t=>taskHTML(t,false)).join('');
+    if(dEl)dEl.innerHTML=dArr.map(t=>taskHTML(t,true)).join('');
+    bindTaskClicks(s.id,tArr,dArr);
+    updatePhaseProgress(s.id,tArr,dArr);
+  });
+}
+
+function taskHTML(t,isDeliverable){
+  const checked=!!STATE.tasks[t.id];
+  const respLabel=RESP_LABELS[t.resp]||t.resp;
+  const respClass='resp-'+t.resp;
+  return `<div class="task-item${isDeliverable?' deliverable':''}${checked?' checked':''}" id="ti-${t.id}" onclick="toggleTask('${t.id}','${isDeliverable}')">
+    <div class="cb-wrap"><div class="cb${checked?' checked':''}" id="cb-${t.id}"><span class="cb-check">✓</span></div></div>
+    <div class="task-text">${t.text}</div>
+    <span class="task-resp ${respClass}">${respLabel}</span>
+  </div>`;
+}
+
+function bindTaskClicks(){}// handled inline
+
+function toggleTask(id){
+  STATE.tasks[id]=!STATE.tasks[id];
+  const el=document.getElementById('ti-'+id);
+  const cb=document.getElementById('cb-'+id);
+  if(STATE.tasks[id]){
+    el.classList.add('checked');cb.classList.add('checked');
+    addLog('task',id,`Tarea completada`);
+  } else {
+    el.classList.remove('checked');cb.classList.remove('checked');
+    addLog('untask',id,`Tarea desmarcada`);
+  }
+  saveState();
+  SECTIONS.forEach(s=>{
+    const tArr=TASKS[s.tasks]||[];
+    const dArr=s.deliverables?TASKS[s.deliverables]:[];
+    updatePhaseProgress(s.id,tArr,dArr);
+  });
+  updateGlobalProgress();
+}
+
+function updatePhaseProgress(sectionId,tArr,dArr){
+  const all=[...tArr,...dArr];
+  if(!all.length)return;
+  const done=all.filter(t=>STATE.tasks[t.id]).length;
+  const pct=Math.round(done/all.length*100);
+  const fillEl=document.getElementById('fill-'+sectionId);
+  const pctEl=document.getElementById('pct-'+sectionId);
+  if(fillEl)fillEl.style.width=pct+'%';
+  if(pctEl)pctEl.textContent=pct+'%';
+  const btn=document.getElementById('complete-btn-'+sectionId);
+  if(btn){
+    if(pct===100&&!STATE.reports[sectionId]){btn.classList.add('visible');}
+    else{btn.classList.remove('visible');}
+  }
+  const done_badge=document.getElementById('done-badge-'+sectionId);
+  const done_text=document.getElementById('done-text-'+sectionId);
+  if(done_badge&&STATE.reports[sectionId]){
+    const r=STATE.reports[sectionId];
+    done_badge.classList.add('visible');
+    if(done_text)done_text.textContent=`Completado el ${r.date} por ${ROLE_LABELS[r.role]||r.role}`;
+  }
+  // timeline status
+  const tlNode=document.getElementById('tln-'+sectionId);
+  const tlStat=document.getElementById('tls-'+sectionId);
+  if(STATE.reports[sectionId]){
+    if(tlStat){tlStat.textContent='completado';tlStat.className='tl-status done';}
+    if(tlNode){tlNode.style.boxShadow='0 0 0 3px #F98C53';}
+  } else if(pct>0){
+    if(tlStat){tlStat.textContent='en progreso';tlStat.className='tl-status active';}
+  }
+}
+
+function updateGlobalProgress(){
+  const all=[];
+  SECTIONS.forEach(s=>{
+    (TASKS[s.tasks]||[]).forEach(t=>all.push(t.id));
+    if(s.deliverables)(TASKS[s.deliverables]||[]).forEach(t=>all.push(t.id));
+  });
+  const done=all.filter(id=>STATE.tasks[id]).length;
+  const pct=Math.round(done/all.length*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressPct').textContent=pct+'%';
+  document.getElementById('cnt-programa').textContent=done+'/'+all.length;
+}
+
+// ── REPORT MODAL ──
+function openReportModal(sectionId,label){
+  pendingReport={sectionId,label};
+  document.getElementById('reportModalTitle').textContent='Cerrar: '+label;
+  document.getElementById('reportModalDesc').textContent='Agrega notas de cierre. Se registrará con tu nombre y la fecha de hoy.';
+  document.getElementById('reportNotes').value='';
+  document.getElementById('reportModal').classList.remove('hidden');
+}
+function closeReportModal(){
+  document.getElementById('reportModal').classList.add('hidden');
+  pendingReport=null;
+}
+function confirmReport(){
+  if(!pendingReport)return;
+  const {sectionId,label}=pendingReport;
+  const notes=document.getElementById('reportNotes').value.trim();
+  const date=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+  const role=STATE.role||'coord';
+  STATE.reports[sectionId]={label,notes,date,role};
+  addLog('report',sectionId,`${label} marcado como completado`);
+  saveState();
+  closeReportModal();
+  const btn=document.getElementById('complete-btn-'+sectionId);
+  if(btn)btn.classList.remove('visible');
+  const badge=document.getElementById('done-badge-'+sectionId);
+  const dtext=document.getElementById('done-text-'+sectionId);
+  if(badge){badge.classList.add('visible');}
+  if(dtext){dtext.textContent=`Completado el ${date} por ${ROLE_LABELS[role]||role}`;}
+  const tlStat=document.getElementById('tls-'+sectionId);
+  const tlNode=document.getElementById('tln-'+sectionId);
+  if(tlStat){tlStat.textContent='completado';tlStat.className='tl-status done';}
+  if(tlNode){tlNode.style.boxShadow='0 0 0 3px #F98C53';}
+  renderReports();
+  document.getElementById('cnt-reportes').textContent=Object.keys(STATE.reports).length;
+}
+
+// ── REPORTS ──
+function renderReports(){
+  const el=document.getElementById('reports-list');
+  const reports=Object.entries(STATE.reports);
+  if(!reports.length){
+    el.innerHTML='<div class="report-card report-card-empty"><div class="icon">📋</div><p>Aún no hay reportes. Cuando una fase o hito sea completado, aparecerá aquí.</p></div>';
+    return;
+  }
+  el.innerHTML=reports.map(([id,r])=>`
+    <div class="report-card">
+      <div class="report-header">
+        <div><div class="report-title">${r.label}</div><div class="report-meta">Completado el ${r.date}</div></div>
+        <span class="report-badge badge-${r.role}">${ROLE_LABELS[r.role]||r.role}</span>
+      </div>
+      ${r.notes?`<div class="report-notes">${r.notes}</div>`:'<div class="report-notes" style="color:var(--g400);font-style:italic">Sin notas adicionales.</div>'}
+    </div>`).join('');
+  document.getElementById('cnt-reportes').textContent=reports.length;
+}
+
+// ── LOG ──
+function addLog(type,id,text){
+  const role=STATE.role||'coord';
+  const now=new Date();
+  const time=now.toLocaleDateString('es-MX',{day:'2-digit',month:'short'})+' '+now.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  STATE.log.unshift({type,id,text,role,time});
+  if(STATE.log.length>100)STATE.log=STATE.log.slice(0,100);
+  renderLog();
+}
+function renderLog(){
+  const el=document.getElementById('log-list');
+  if(!STATE.log.length){el.innerHTML='<div class="log-empty">La bitácora está vacía.</div>';return;}
+  el.innerHTML=STATE.log.slice(0,50).map(l=>`
+    <div class="log-item">
+      <div class="log-dot" style="background:${ROLE_COLORS[l.role]||'#ccc'}"></div>
+      <div class="log-text">${l.text} <span>— ${ROLE_LABELS[l.role]||l.role} · ${l.time}</span></div>
+    </div>`).join('');
+  document.getElementById('cnt-bitacora').textContent=STATE.log.length;
+}
+
+// ── TABS ──
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── PHASE TOGGLE ──
+function togglePhase(id){
+  const card=document.getElementById('card-'+id);
+  card.classList.toggle('open');
+}
+
+// ── INIT ──
+function init(){
+  // Show role modal if no role set
+  if(!STATE.role){
+    document.getElementById('roleModal').classList.remove('hidden');
+  } else {
+    document.getElementById('roleModal').classList.add('hidden');
+    applyRole();
+  }
+  renderTasks();
+  // Restore checkbox states
+  Object.keys(STATE.tasks).forEach(id=>{
+    if(STATE.tasks[id]){
+      const el=document.getElementById('ti-'+id);
+      const cb=document.getElementById('cb-'+id);
+      if(el)el.classList.add('checked');
+      if(cb)cb.classList.add('checked');
+    }
+  });
+  // Restore completion badges
+  SECTIONS.forEach(s=>{
+    const tArr=TASKS[s.tasks]||[];
+    const dArr=s.deliverables?TASKS[s.deliverables]:[];
+    updatePhaseProgress(s.id,tArr,dArr);
+    if(STATE.reports[s.id]){
+      const btn=document.getElementById('complete-btn-'+s.id);
+      if(btn)btn.classList.remove('visible');
+    }
+  });
+  updateGlobalProgress();
+  renderReports();
+  renderLog();
+  document.getElementById('cnt-reportes').textContent=Object.keys(STATE.reports).length;
+  document.getElementById('cnt-bitacora').textContent=STATE.log.length;
+}
+
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
